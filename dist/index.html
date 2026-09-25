@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090c13">
+  <meta name="description" content="属于你的烟火实验室。自由调节烟花形态、颜色、大小和数量，点击夜空，点亮此刻。">
+  <title>瞬间 · 烟火实验室</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23090c13'/%3E%3Cg stroke='%23ff876d' stroke-width='2.3' stroke-linecap='round'%3E%3Cpath d='M16 4v6m0 12v6M4 16h6m12 0h6M7.5 7.5l4.2 4.2m8.6 8.6 4.2 4.2M7.5 24.5l4.2-4.2m8.6-8.6 4.2-4.2'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css?v=20260925-mobile">
+  <script src="config.js?v=20260925-mobile" defer></script>
+  <script src="engine.js?v=20260925-mobile" defer></script>
+  <script src="audio-assets.js" defer></script>
+  <script src="audio.js" defer></script>
+  <script src="app.js?v=20260925-mobile" defer></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2v5m0 10v5M2 12h5m10 0h5M5 5l3.5 3.5m7 7L19 19M5 19l3.5-3.5m7-7L19 5"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5zM15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5zM16 9l6 6m0-6-6 6"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
+    <symbol id="i-clear" viewBox="0 0 24 24"><path d="m14 3 7 7-10 10H7l-5-5zM8 9l7 7M11 20h11"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+  </defs></svg>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="瞬间，烟火实验室首页"><svg class="brand-mark"><use href="#i-spark"/></svg><span class="brand-name">瞬间</span><span class="brand-divider"></span><span class="brand-en">MOMENT<span>FIREWORKS LAB</span></span></a>
+    <div class="header-note">把这一刻，留给烟火。</div>
+    <div class="header-actions"><button class="icon-button" id="sound" aria-label="开启音效" aria-pressed="false" title="开启音效"><svg><use href="#i-mute"/></svg></button><span class="action-divider"></span><button class="icon-button" id="fullscreen" aria-label="进入全屏" title="全屏 · F"><svg><use href="#i-expand"/></svg></button></div>
+  </header>
+  <main class="workspace">
+    <section class="stage" aria-label="互动烟花夜空">
+      <canvas id="stars" aria-hidden="true"></canvas>
+      <canvas id="fireworks" tabindex="0" aria-label="烟花画布，点击任意位置发射烟花，空格键发射一组烟花"></canvas>
+      <div class="stage-heading"><div class="eyebrow"><span></span> MAKE A LITTLE MAGIC</div><h1>烟火实验室<span>。</span></h1><p>点击夜空，让烟花在指尖绽放</p></div>
+      <div class="stage-tag"><span class="live-dot"></span><span id="stage-status">自动燃放中</span></div>
+      <div class="stage-bottom">
+        <div class="launchbar">
+          <label class="auto-control" for="auto"><span class="switch"><input type="checkbox" id="auto" checked><span class="switch-track"></span></span><span>自动燃放</span></label>
+          <span class="launch-divider"></span>
+          <button class="launch-button" id="launch"><svg><use href="#i-spark"/></svg><span>发射烟花</span><kbd>SPACE</kbd></button>
+          <button class="clear-button icon-button" id="clear" title="清空夜空" aria-label="清空夜空"><svg><use href="#i-clear"/></svg></button>
+        </div>
+        <div class="stage-footer"><span><span class="tiny-spark">✦</span> <span id="particle-count">0</span> 粒子<span class="footer-dot">·</span><span id="fps">60</span> FPS</span><span class="keyboard-hint">点击发射<span class="footer-dot">/</span><kbd>F</kbd> 全屏</span></div>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <noscript><p class="no-script">请启用 JavaScript，以运行烟花模拟器。</p></noscript>
+    </section>
+    <aside class="control-panel" aria-labelledby="panel-title">
+      <div class="panel-heading"><div><span class="panel-eyebrow">THE CONTROL ROOM</span><h2 id="panel-title">调配你的烟火</h2></div><button id="reset" class="reset-button" title="恢复默认参数"><svg><use href="#i-reset"/></svg>重置</button></div>
+      <div class="panel-scroll">
+        <section class="performance-card" aria-label="设备与画质"><label for="performance-mode">设备与画质</label><select id="performance-mode"><option value="auto">自动适配设备</option><option value="desktop">电脑高画质</option><option value="mobile">手机流畅</option></select><strong id="performance-status"></strong><p id="performance-detail"></p><span>切换档位会应用对应的默认烟花参数</span></section>
+        <section class="mix-card" aria-label="混合烟花秀"><div><strong>让整片夜空都不同</strong><p>多种形态 · 多彩变色 · 随机大小</p></div><button id="mix-all"><svg><use href="#i-spark"/></svg>一键混合</button></section>
+        <section class="control-section"><div class="section-heading"><h3>烟花样式</h3><span>01 / SHAPE</span></div>
+          <div class="segmented shape-mode" role="group" aria-label="样式模式"><button data-shape-mode="fixed" aria-pressed="false">固定一种</button><button data-shape-mode="mixed" class="selected" aria-pressed="true">多选混合</button></div>
+          <div class="shape-grid" role="group" aria-label="烟花样式">
+            <button class="shape-button selected" data-shape="chrysanthemum" aria-pressed="true"><canvas width="112" height="72" aria-hidden="true"></canvas><span>经典菊花</span></button>
+            <button class="shape-button" data-shape="willow" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>金色垂柳</span></button>
+            <button class="shape-button" data-shape="ring" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>星环</span></button>
+            <button class="shape-button" data-shape="heart" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>心动时刻</span></button>
+            <button class="shape-button" data-shape="palm" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>棕榈花开</span></button>
+            <button class="shape-button" data-shape="double" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>双重奏</span></button>
+            <button class="shape-button" data-shape="strobe" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>闪耀星雨</span></button>
+            <button class="shape-button" data-shape="crossette" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>裂变花火</span></button>
+            <button class="shape-button" data-shape="star" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>星愿五角</span></button>
+            <button class="shape-button" data-shape="saturn" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>土星光环</span></button>
+            <button class="shape-button" data-shape="spiral" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>星河旋涡</span></button>
+            <button class="shape-button" data-shape="flower" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>繁花绽放</span></button>
+            <button class="shape-button" data-shape="bouquet" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>花束连爆</span></button>
+            <button class="shape-button" data-shape="leaves" aria-pressed="false"><canvas width="112" height="72" aria-hidden="true"></canvas><span>流萤飘落</span></button>
+          </div>
+          <p class="control-hint" id="shape-hint">已选 14 种，每一发独立随机</p>
+        </section>
+        <section class="control-section color-section"><div class="section-heading"><h3>烟火配色</h3><span>02 / COLOR</span></div>
+          <div class="segmented" role="group" aria-label="配色模式"><button data-mode="single" aria-pressed="false">单色</button><button data-mode="rainbow" aria-pressed="false">随机换色</button><button data-mode="mixed" class="selected" aria-pressed="true"><span class="rainbow-dot"></span>多彩变色</button></div>
+          <div class="swatches" role="group" aria-label="烟花颜色"><button class="swatch selected" style="--swatch:#ffc078" data-color="#ffc078" aria-label="香槟金" aria-pressed="true"></button><button class="swatch" style="--swatch:#ff796f" data-color="#ff796f" aria-label="珊瑚红" aria-pressed="false"></button><button class="swatch" style="--swatch:#ee9fcf" data-color="#ee9fcf" aria-label="樱花粉" aria-pressed="false"></button><button class="swatch" style="--swatch:#ab97ff" data-color="#ab97ff" aria-label="星云紫" aria-pressed="false"></button><button class="swatch" style="--swatch:#80caff" data-color="#80caff" aria-label="冰川蓝" aria-pressed="false"></button><button class="swatch" style="--swatch:#8fe0c0" data-color="#8fe0c0" aria-label="薄荷绿" aria-pressed="false"></button><label class="custom-color" title="自选颜色"><input id="color" type="color" value="#ffc078" aria-label="自选烟花颜色"><span>＋</span></label></div>
+          <div class="color-caption"><span id="color-name">香槟金</span><span id="hex-value">#FFC078</span></div>
+        </section>
+        <section class="control-section parameters"><div class="section-heading"><h3>绽放参数</h3><span>03 / PARAMETERS</span></div>
+          <label class="option-switch" for="random-size"><span>每发随机大小</span><span class="switch"><input type="checkbox" id="random-size" checked><span class="switch-track"></span></span></label>
+          <div id="fixed-size" class="range-control" hidden><div class="range-label"><label for="size">烟花大小</label><output for="size" id="size-value">85<small>%</small></output></div><input id="size" type="range" min="35" max="150" value="85" step="5"><div class="range-endpoints"><span>小巧</span><span>盛大</span></div></div>
+          <div id="random-size-controls"><div class="range-control"><div class="range-label"><label for="sizeMin">最小烟花</label><output for="sizeMin" id="sizeMin-value">55<small>%</small></output></div><input id="sizeMin" type="range" min="35" max="150" value="55" step="5"></div><div class="range-control"><div class="range-label"><label for="sizeMax">最大烟花</label><output for="sizeMax" id="sizeMax-value">130<small>%</small></output></div><input id="sizeMax" type="range" min="35" max="150" value="130" step="5"></div></div>
+          <div class="range-control"><div class="range-label"><label for="density">粒子密度</label><output for="density" id="density-value">140<small>粒</small></output></div><input id="density" type="range" min="40" max="300" value="140" step="10"><div class="range-endpoints"><span>轻盈</span><span>繁盛</span></div></div>
+          <div class="range-control"><div class="range-label"><label for="quantity">每次发射</label><output for="quantity" id="quantity-value">3<small>发</small></output></div><input id="quantity" type="range" min="1" max="10" value="3" step="1"><div class="range-endpoints"><span>独自绽放</span><span>漫天烟火</span></div></div>
+          <div class="range-control"><div class="range-label"><label for="interval">自动燃放间隔</label><output for="interval" id="interval-value">1.8<small>秒</small></output></div><input id="interval" type="range" min="0.4" max="4" value="1.8" step="0.1"></div>
+        </section>
+        <section class="control-section audio-controls"><div class="section-heading"><h3>烟火音效</h3><button class="test-sound" id="test-sound"><svg><use href="#i-sound"/></svg>试听</button></div><div class="range-control"><div class="range-label"><label for="volume">音量</label><output id="volume-value" for="volume">70<small>%</small></output></div><input id="volume" type="range" min="0" max="100" value="70" step="5"></div><div class="audio-feedback"><span id="audio-status" role="status">点击试听或右上角开启声音</span><meter id="audio-level" min="0" max="1" value="0" aria-label="声音输出电平"></meter></div></section>
+        <details class="advanced"><summary><span>更多物理参数</span><svg><use href="#i-chevron"/></svg></summary><div class="advanced-content">
+          <div class="range-control"><div class="range-label"><label for="bloom">光效强度</label><output id="bloom-value" for="bloom">85<small>%</small></output></div><input id="bloom" type="range" min="0" max="100" value="85" step="5"></div>
+          <div class="range-control"><div class="range-label"><label for="trail">拖尾长度</label><output id="trail-value" for="trail">60<small>%</small></output></div><input id="trail" type="range" min="0" max="100" value="60" step="5"></div>
+          <div class="range-control"><div class="range-label"><label for="gravity">重力强度</label><output id="gravity-value" for="gravity">100<small>%</small></output></div><input id="gravity" type="range" min="0" max="200" value="100" step="10"></div>
+          <div class="range-control"><div class="range-label"><label for="wind">风向与风力</label><output id="wind-value" for="wind">0</output></div><input id="wind" type="range" min="-100" max="100" value="0" step="5"><div class="range-endpoints"><span>← 向左</span><span>向右 →</span></div></div>
+        </div></details>
+        <p class="panel-tip"><span>✧</span> 调整参数，下一次绽放就会不同。</p>
+      </div>
+      <div class="panel-footer"><span>每一朵烟花，都只属于此刻</span><svg><use href="#i-spark"/></svg></div>
+    </aside>
+  </main>
+</body>
+</html>
