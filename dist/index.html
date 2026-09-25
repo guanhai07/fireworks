@@ -7,17 +7,18 @@
   <meta name="description" content="属于你的烟火实验室。自由调节烟花形态、颜色、大小和数量，点击夜空，点亮此刻。">
   <title>瞬间 · 烟火实验室</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23090c13'/%3E%3Cg stroke='%23ff876d' stroke-width='2.3' stroke-linecap='round'%3E%3Cpath d='M16 4v6m0 12v6M4 16h6m12 0h6M7.5 7.5l4.2 4.2m8.6 8.6 4.2 4.2M7.5 24.5l4.2-4.2m8.6-8.6 4.2-4.2'/%3E%3C/g%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20260925-mobile">
+  <link rel="stylesheet" href="styles.css?v=20260925-immersive">
   <script src="config.js?v=20260925-mobile" defer></script>
   <script src="engine.js?v=20260925-mobile" defer></script>
   <script src="audio-assets.js" defer></script>
   <script src="audio.js" defer></script>
-  <script src="app.js?v=20260925-mobile" defer></script>
+  <script src="app.js?v=20260925-immersive" defer></script>
 </head>
 <body>
   <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2v5m0 10v5M2 12h5m10 0h5M5 5l3.5 3.5m7 7L19 19M5 19l3.5-3.5m7-7L19 5"/></symbol>
     <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+    <symbol id="i-collapse" viewBox="0 0 24 24"><path d="M3 8h5V3m8 0v5h5M3 16h5v5m8 0v-5h5"/></symbol>
     <symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5zM15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
     <symbol id="i-mute" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5zM16 9l6 6m0-6-6 6"/></symbol>
     <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
@@ -34,6 +35,7 @@
     <section class="stage" aria-label="互动烟花夜空">
       <canvas id="stars" aria-hidden="true"></canvas>
       <canvas id="fireworks" tabindex="0" aria-label="烟花画布，点击任意位置发射烟花，空格键发射一组烟花"></canvas>
+      <button class="immersive-exit" id="exit-fullscreen" aria-label="退出全屏" title="退出全屏 · Esc / F"><svg aria-hidden="true"><use href="#i-collapse"/></svg></button>
       <div class="stage-heading"><div class="eyebrow"><span></span> MAKE A LITTLE MAGIC</div><h1>烟火实验室<span>。</span></h1><p>点击夜空，让烟花在指尖绽放</p></div>
       <div class="stage-tag"><span class="live-dot"></span><span id="stage-status">自动燃放中</span></div>
       <div class="stage-bottom">
@@ -51,7 +53,15 @@
     <aside class="control-panel" aria-labelledby="panel-title">
       <div class="panel-heading"><div><span class="panel-eyebrow">THE CONTROL ROOM</span><h2 id="panel-title">调配你的烟火</h2></div><button id="reset" class="reset-button" title="恢复默认参数"><svg><use href="#i-reset"/></svg>重置</button></div>
       <div class="panel-scroll">
-        <section class="performance-card" aria-label="设备与画质"><label for="performance-mode">设备与画质</label><select id="performance-mode"><option value="auto">自动适配设备</option><option value="desktop">电脑高画质</option><option value="mobile">手机流畅</option></select><strong id="performance-status"></strong><p id="performance-detail"></p><span>切换档位会应用对应的默认烟花参数</span></section>
+        <section class="performance-card" aria-labelledby="performance-title">
+          <h3 id="performance-title">设备与画质</h3>
+          <div class="profile-options" role="radiogroup" aria-labelledby="performance-title">
+            <label class="profile-option"><input type="radio" name="performance-mode" value="auto" checked aria-label="自动适配设备"><span><b>自动适配</b><small>跟随设备</small></span></label>
+            <label class="profile-option"><input type="radio" name="performance-mode" value="desktop" aria-label="电脑高画质"><span><b>电脑</b><small>高画质</small></span></label>
+            <label class="profile-option"><input type="radio" name="performance-mode" value="mobile" aria-label="手机流畅"><span><b>手机</b><small>更流畅</small></span></label>
+          </div>
+          <strong id="performance-status"></strong><p id="performance-detail"></p><span>切换档位会应用对应的默认烟花参数</span>
+        </section>
         <section class="mix-card" aria-label="混合烟花秀"><div><strong>让整片夜空都不同</strong><p>多种形态 · 多彩变色 · 随机大小</p></div><button id="mix-all"><svg><use href="#i-spark"/></svg>一键混合</button></section>
         <section class="control-section"><div class="section-heading"><h3>烟花样式</h3><span>01 / SHAPE</span></div>
           <div class="segmented shape-mode" role="group" aria-label="样式模式"><button data-shape-mode="fixed" aria-pressed="false">固定一种</button><button data-shape-mode="mixed" class="selected" aria-pressed="true">多选混合</button></div>

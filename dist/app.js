@@ -44,7 +44,7 @@
 
   function updatePerformanceUI() {
     const state=engine.performanceState();
-    $('#performance-mode').value=profileChoice;
+    for (const input of $$('input[name="performance-mode"]')) input.checked=input.value===profileChoice;
     $('#performance-status').textContent=`${profileChoice==='auto' ? '自动识别 · ' : ''}${FireworksConfig.profiles[state.profile].label}${state.quality ? ' · 已自动平衡负载' : ''}`;
     $('#performance-detail').textContent=`辉光、变色与爆闪均保留，繁忙时自动调节绘制精度。当前 ${state.dpr}× 精度，上限 ${state.particleLimit.toLocaleString('zh-CN')} 粒子。`;
   }
@@ -135,7 +135,8 @@
   $('#launch').addEventListener('click', () => launch());
   $('#clear').addEventListener('click', () => {engine.clear(); toast(settings.auto ? '夜空已清空，下一轮即将开始' : '夜空已清空');});
   $('#reset').addEventListener('click', () => {Object.assign(settings, freshSettings());audio.setVolume(settings.volume/100);engine.clear();updateUI();if (settings.auto) launch();toast('已恢复默认混合烟花秀');});
-  $('#performance-mode').addEventListener('change',event=>{
+  for (const input of $$('input[name="performance-mode"]')) input.addEventListener('change',event=>{
+    if (!event.target.checked || profileChoice===event.target.value) return;
     profileChoice=event.target.value;
     const previous={auto:settings.auto,volume:settings.volume};
     Object.assign(settings,freshSettings(),previous);
@@ -162,22 +163,46 @@
   document.addEventListener('pointerdown',()=>{
     if (audio.enabled && audio.context?.state==='suspended') audio.context.resume().catch(()=>{});
   },{passive:true});
+  let immersive = false, fullscreenPending = false, previousScroll = 0, previousFocus;
+  function setImmersive(active) {
+    if (immersive===active) return;
+    if (active) {previousScroll=window.scrollY;previousFocus=document.activeElement;}
+    immersive=active;
+    document.documentElement.classList.toggle('immersive',active);
+    $('#fullscreen').setAttribute('aria-pressed',String(active));
+    if (active) $('#fireworks').focus({preventScroll:true});
+    else {
+      previousFocus?.focus({preventScroll:true});
+      window.scrollTo({top:previousScroll,behavior:'instant'});
+    }
+  }
   async function fullscreen() {
+    if (fullscreenPending) return;
+    fullscreenPending=true;
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
-      else toast('当前浏览器不支持全屏，请使用浏览器全屏功能');
-    } catch {toast('当前环境无法进入全屏');}
+      if (immersive) {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        setImmersive(false);
+      } else {
+        // The immersive layout also works in browsers without the native Fullscreen API.
+        setImmersive(true);
+        if (document.documentElement.requestFullscreen && document.fullscreenEnabled!==false) {
+          try {await document.documentElement.requestFullscreen({navigationUI:'hide'});}
+          catch { /* Keep the viewport-filling layout when native fullscreen is unavailable. */ }
+        }
+      }
+    } catch {toast('请按 Esc 或使用浏览器的退出全屏功能');}
+    finally {fullscreenPending=false;}
   }
   $('#fullscreen').addEventListener('click', fullscreen);
-  document.addEventListener('fullscreenchange', () => {
-    $('#fullscreen').setAttribute('aria-label', document.fullscreenElement ? '退出全屏' : '进入全屏');
-    $('#fullscreen').title = document.fullscreenElement ? '退出全屏 · F' : '全屏 · F';
-  });
+  $('#exit-fullscreen').addEventListener('click', fullscreen);
+  document.addEventListener('fullscreenchange', () => setImmersive(!!document.fullscreenElement));
   document.addEventListener('keydown', event => {
-    if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || /^(INPUT|BUTTON|SELECT|TEXTAREA|SUMMARY|A)$/.test(event.target.tagName) || event.target.isContentEditable) return;
+    if (event.key==='Escape' && immersive) {event.preventDefault();fullscreen();return;}
+    if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(event.target.tagName) || event.target.isContentEditable) return;
+    if (event.key.toLowerCase() === 'f') {event.preventDefault();fullscreen();return;}
+    if (/^(BUTTON|SUMMARY|A)$/.test(event.target.tagName)) return;
     if (event.code === 'Space') {event.preventDefault(); launch();}
-    if (event.key.toLowerCase() === 'f') fullscreen();
   });
 
   // Miniature particle diagrams preview each emission pattern.
